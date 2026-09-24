@@ -1,0 +1,40 @@
+def format_pdf(content: str) -> bytes:
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=11)
+
+    # Remove characters that standard Arial cannot handle
+    content = content.encode("latin-1", "replace").decode("latin-1")
+
+    for line in content.splitlines():
+
+        # Replace tabs and extra spaces
+        line = line.replace("\t", " ").strip()
+
+        # Empty line
+        if not line:
+            pdf.ln(6)
+            continue
+
+        # Break long lines manually
+        max_chars = 85
+
+        while len(line) > max_chars:
+            part = line[:max_chars]
+
+            # Try to break at a space
+            space = part.rfind(" ")
+
+            if space > 0:
+                part = part[:space]
+            else:
+                part = line[:max_chars]
+
+            pdf.cell(0, 7, part, ln=True)
+            line = line[len(part):].strip()
+
+        if line:
+            pdf.cell(0, 7, line, ln=True)
+
+    return pdf.output()
